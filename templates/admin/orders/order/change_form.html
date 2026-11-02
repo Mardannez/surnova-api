@@ -1,0 +1,22 @@
+{% extends "admin/change_form.html" %}
+{% block content %}
+{% if surnova_order %}
+<section class="sn-order-overview" aria-label="Resumen del pedido">
+  <div class="sn-order-heading"><div><p class="sn-eyebrow">DETALLE DEL PEDIDO</p><h1>{{ surnova_order.public_number }}</h1><p>Creado el {{ surnova_order.created_at|date:"d M Y, H:i" }}</p></div>{{ surnova_order_badge }}</div>
+  <div class="sn-order-grid">
+    <div class="sn-order-main">
+      <div class="sn-order-contact-grid">
+        <section class="sn-panel sn-contact-card"><h2>Cliente</h2><strong>{{ surnova_order.user.first_name }} {{ surnova_order.user.last_name }}</strong><p>{{ surnova_order.user.email }}</p><p>{{ surnova_order.user.phone }}</p></section>
+        <section class="sn-panel sn-contact-card"><h2>Dirección de envío</h2>{% with address=surnova_shipping_address %}{% if address %}<strong>{{ address.full_name }}</strong><p>{{ address.address_line_1 }}{% if address.address_line_2 %}, {{ address.address_line_2 }}{% endif %}</p><p>{{ address.city }}, {{ address.state }}, {{ address.country }}</p><p>{{ address.phone }}</p>{% else %}<p>Sin dirección registrada</p>{% endif %}{% endwith %}</section>
+      </div>
+      <section class="sn-panel"><header class="sn-panel-header"><h2>Productos del pedido</h2><span class="sn-badge sn-badge-neutral">{{ surnova_order.items.count }} variante{{ surnova_order.items.count|pluralize }}</span></header><div class="sn-table-scroll"><table class="sn-table"><thead><tr><th>Producto</th><th>Precio unitario</th><th>Cantidad</th><th>Subtotal</th></tr></thead><tbody>{% for item in surnova_order.items.all %}<tr><td><strong>{{ item.product_name_snapshot }}</strong><small class="sn-block sn-muted">{{ item.variant_name_snapshot }} · {{ item.sku_snapshot }}</small></td><td class="sn-nowrap">L {{ item.unit_price }}</td><td>{{ item.quantity }}</td><td class="sn-nowrap"><strong>L {{ item.line_total }}</strong></td></tr>{% endfor %}</tbody></table></div></section>
+    </div>
+    <div class="sn-order-aside">
+      <section class="sn-panel sn-total-card"><h2>Resumen de totales</h2><dl><div><dt>Subtotal</dt><dd>L {{ surnova_order.subtotal }}</dd></div><div><dt>Descuento</dt><dd>L {{ surnova_order.discount_total }}</dd></div><div><dt>Impuestos</dt><dd>L {{ surnova_order.tax_total }}</dd></div><div><dt>Envío</dt><dd>L {{ surnova_order.shipping_total }}</dd></div><div class="sn-grand-total"><dt>Total</dt><dd>L {{ surnova_order.total }}</dd></div></dl></section>
+      <section class="sn-panel sn-timeline-card"><h2>Seguimiento del pedido</h2><ol>{% for event in surnova_order.status_history.all %}<li><span class="sn-timeline-dot"></span><strong>{{ event.get_new_status_display }}</strong><time>{{ event.created_at|date:"d M Y, H:i" }}</time>{% if event.notes %}<p>{{ event.notes }}</p>{% endif %}</li>{% endfor %}</ol></section>
+    </div>
+  </div>
+</section>
+{% endif %}
+{{ block.super }}
+{% endblock %}

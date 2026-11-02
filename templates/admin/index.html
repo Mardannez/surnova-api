@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<section class="sn-dashboard" aria-label="Resumen de SURNOVA">
+  <div class="sn-page-intro">
+    <div><p class="sn-eyebrow">TU OPERACIÓN, EN UN SOLO LUGAR</p><h1>Hola{% if surnova_first_name %}, {{ surnova_first_name }}{% endif %}<span class="sn-neon-dot">.</span></h1><p>Esto es lo que está pasando en tu tienda SURNOVA.</p></div>
+    <span class="sn-live"><span></span> Información actualizada</span>
+  </div>
+  <div class="sn-metric-grid">
+    {% for card in surnova_cards %}
+      <a class="sn-metric" href="{{ card.url }}">
+        <span class="sn-metric-icon sn-tone-{{ card.tone }}"><span class="material-symbols-outlined" aria-hidden="true">{{ card.icon }}</span></span>
+        <span class="sn-metric-label">{{ card.label }}</span><strong>{{ card.value }}</strong><span class="sn-metric-caption">{{ card.caption }}</span>
+        <span class="sn-metric-arrow material-symbols-outlined" aria-hidden="true">arrow_outward</span>
+      </a>
+    {% empty %}<div class="sn-empty">No tienes módulos asignados. Solicita los permisos necesarios al administrador.</div>{% endfor %}
+  </div>
+  <div class="sn-dashboard-columns">
+    <section class="sn-panel">
+      <header class="sn-panel-header"><div><h2>Actividad reciente</h2><p>Últimos cambios realizados desde el panel</p></div><span class="sn-icon-muted material-symbols-outlined" aria-hidden="true">history</span></header>
+      <div class="sn-table-scroll"><table class="sn-table"><thead><tr><th>Fecha</th><th>Descripción</th><th>Usuario</th></tr></thead><tbody>
+      {% for entry in surnova_activity %}<tr><td class="sn-nowrap">{{ entry.action_time|date:"d M, H:i" }}</td><td><span class="sn-activity-dot {% if entry.is_deletion %}sn-activity-delete{% endif %}"></span>{% if entry.is_addition %}Creado{% elif entry.is_change %}Actualizado{% else %}Eliminado{% endif %}: {{ entry.object_repr }}</td><td>{{ entry.user.first_name|default:entry.user.email }}</td></tr>
+      {% empty %}<tr><td colspan="3"><div class="sn-empty"><span class="material-symbols-outlined" aria-hidden="true">event_note</span><strong>Tu actividad aparecerá aquí</strong><p>Los cambios en productos, existencias y pedidos quedan registrados.</p></div></td></tr>{% endfor %}
+      </tbody></table></div>
+    </section>
+    <section class="sn-panel">
+      <header class="sn-panel-header"><div><h2>Últimos pedidos</h2><p>Seguimiento de las compras de tu tienda</p></div>{% if surnova_can_view_orders %}<a class="sn-text-link" href="{% url 'admin:orders_order_changelist' %}">Ver todos <span aria-hidden="true">↗</span></a>{% endif %}</header>
+      {% for order in surnova_recent_orders %}<a class="sn-order-row" href="{% url 'admin:orders_order_change' order.pk %}"><span class="sn-order-symbol material-symbols-outlined" aria-hidden="true">shopping_bag</span><span class="sn-order-info"><strong>{{ order.public_number }}</strong><small>{{ order.user.first_name }} {{ order.user.last_name }} · {{ order.get_status_display }}</small></span><strong class="sn-nowrap">L {{ order.total }}</strong></a>
+      {% empty %}<div class="sn-empty"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span><strong>{% if surnova_can_view_orders %}Todo listo para tu primera venta{% else %}Acceso a pedidos restringido{% endif %}</strong><p>{% if surnova_can_view_orders %}Los nuevos pedidos aparecerán aquí automáticamente.{% else %}Este módulo requiere permiso para consultar pedidos.{% endif %}</p></div>{% endfor %}
+    </section>
+  </div>
+  <footer class="sn-dashboard-footer"><span>SURNOVA <span class="sn-footer-separator">/</span> Administración</span><span>Conecta. Gestiona. Crece.</span></footer>
+</section>
+{% endblock %}
